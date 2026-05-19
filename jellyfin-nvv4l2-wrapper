@@ -1,0 +1,113 @@
+#!/bin/bash
+# jellyfin-nvv4l2-wrapper
+# FFmpeg wrapper for Jellyfin HLS hardware transcoding on Nintendo Switch (Tegra X1)
+#
+# Replaces libx264/libx265 with h264_nvv4l2/hevc_nvv4l2 and adjusts
+# incompatible options for the Tegra hardware encoder.
+#
+# Usage: Set this script as the FFmpeg path in Jellyfin's Dashboard > Playback > Transcoding.
+#
+# License: MIT
+
+REAL_FFMPEG="/usr/bin/ffmpeg"
+LOG="/tmp/jellyfin-ffmpeg-wrapper.log"
+
+ARGS=("$@")
+
+echo "=== $(date) ===" >> "$LOG"
+echo "ARGS: $*" >> "$LOG"
+
+# ---------------------------------------------------------------------------
+# Phase 1: Detect if this invocation requires HW encoder substitution.
+#           Only activate when Jellyfin explicitly requests libx264 or libx265.
+#           Stream-copy and probe commands pass through unchanged.
+# ---------------------------------------------------------------------------
+NEEDS_HW_ENCODE=false
+for a in "${ARGS[@]}"; do
+    case "$a" in
+        libx264|libx265) NEEDS_HW_ENCODE=true; break ;;
+    esac
+done
+
+if ! $NEEDS_HW_ENCODE; then
+    echo "NEW_ARGS(passthrough): $*" >> "$LOG"
+    exec "$REAL_FFMPEG" "$@" 2>> "$LOG"
+fi
+
+# ---------------------------------------------------------------------------
+# Phase 2: Rewrite arguments for nvv4l2 hardware encoder.
+# ---------------------------------------------------------------------------
+NEW_ARGS=()
+i=0
+
+while [ $i -lt ${#ARGS[@]} ]; do
+    arg="${ARGS[$i]}"
+    next="${ARGS[$((i+1))]:-}"
+
+    case "$arg" in
+        # ---- Remove CPU-encoder-specific options (with stream specifier support) ----
+        -crf|-crf:*)
+            # libx264/x265 quality setting; not supported by nvv4l2
+            i=$((i+2))
+            ;;
+        -x264opts|-x264opts:*)
+            # libx264 private options
+            i=$((i+2))
+            ;;
+        -x265opts|-x265opts:*)
+            # libx265 private options
+            i=$((i+2))
+            ;;
+        -sc_threshold|-sc_threshold:*)
+            # Scene change threshold; not supported by nvv4l2
+            i=$((i+2))
+            ;;
+        -force_key_frames|-force_key_frames:*)
+            # Keyframe forcing expression; ignored by nvv4l2
+            i=$((i+2))
+            ;;
+        -preset|-preset:*)
+            # nvv4l2 accepts integer presets (1-4), libx264 uses strings (veryfast, etc.)
+            case "$next" in
+                [0-9]*)
+                    NEW_ARGS+=("$arg")
+                    i=$((i+1))
+                    ;;
+                *)
+                    i=$((i+2))
+                    ;;
+            esac
+            ;;
+
+        # ---- Encoder substitution ----
+        libx264)
+            NEW_ARGS+=("h264_nvv4l2")
+            i=$((i+1))
+            ;;
+        libx265)
+            NEW_ARGS+=("hevc_nvv4l2")
+            i=$((i+1))
+            ;;
+
+        # ---- HLS fMP4 fix: add split_by_time ----
+        # h264_nvv4l2 does not generate IDR frames, so the HLS muxer cannot
+        # split segments at keyframe boundaries.  Adding -hls_flags split_by_time
+        # forces time-based splitting regardless of keyframe presence.
+        -hls_segment_type)
+            NEW_ARGS+=("$arg" "$next")
+            if [ "$next" = "fmp4" ]; then
+                NEW_ARGS+=("-hls_flags" "split_by_time")
+            fi
+            i=$((i+2))
+            ;;
+
+        # ---- Everything else passes through unchanged ----
+        *)
+            NEW_ARGS+=("$arg")
+            i=$((i+1))
+            ;;
+    esac
+done
+
+echo "NEW_ARGS: ${NEW_ARGS[*]}" >> "$LOG"
+exec "$REAL_FFMPEG" "${NEW_ARGS[@]}" 2>> "$LOG"

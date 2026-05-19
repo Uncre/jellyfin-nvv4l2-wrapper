@@ -1,0 +1,15 @@
+#!/bin/bash
+# ffprobe-wrapper
+# Filters NVMEDIA debug messages from ffprobe's stdout.
+#
+# The h264_nvv4l2 decoder prints debug messages like "Opening in BLOCKING MODE"
+# and "NvMMLiteOpen" directly to stdout, which corrupts ffprobe's JSON output
+# and causes Jellyfin's Probe Provider to fail with a JSON parse error.
+#
+# License: MIT
+
+exec /usr/bin/ffprobe "$@" 2>&2 | grep -v \
+    -e "^Opening in BLOCKING MODE" \
+    -e "^NvMMLite" \
+    -e "^NVMEDIA:" \
+    -e "^===== NVMEDIA"
