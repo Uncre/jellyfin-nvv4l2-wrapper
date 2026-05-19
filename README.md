@@ -57,7 +57,7 @@ ffmpeg -encoders 2>/dev/null | grep nvv4l2
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/jellyfin-nvv4l2-wrapper.git
+git clone https://github.com/Uncre/jellyfin-nvv4l2-wrapper.git
 cd jellyfin-nvv4l2-wrapper
 sudo bash install.sh
 sudo systemctl restart jellyfin
@@ -197,7 +197,7 @@ ffmpeg -encoders 2>/dev/null | grep nvv4l2
 ### インストール
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/jellyfin-nvv4l2-wrapper.git
+git clone https://github.com/Uncre/jellyfin-nvv4l2-wrapper.git
 cd jellyfin-nvv4l2-wrapper
 sudo bash install.sh
 sudo systemctl restart jellyfin
