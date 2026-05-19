@@ -31,11 +31,11 @@ info "Checking prerequisites..."
 if ! command -v ffmpeg &> /dev/null; then
     echo ""
     error "ffmpeg not found.
-    error "ffmpeg not found.
   Please install FFmpeg with nvv4l2 support for Tegra:
     https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2
-    
-  For L4T Ubuntu, pre-built packages may be available depending on your setup."
+
+  Instructions:
+    Follow the build instructions in the repository linked above."
 fi
 
 if ! ffmpeg -encoders 2>/dev/null | grep -q "h264_nvv4l2"; then

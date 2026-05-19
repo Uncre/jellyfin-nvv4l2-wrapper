@@ -12,7 +12,7 @@ An FFmpeg wrapper script that enables **Jellyfin hardware-accelerated HLS transc
 
 Jellyfin does not natively support the `nvv4l2` encoder family in its UI. This wrapper transparently intercepts FFmpeg calls from Jellyfin, replacing `libx264`/`libx265` with the hardware encoder and adjusting incompatible options.
 
-**Tested with**: Jellyfin 10.11.9 (apt version)
+**Tested with**: Jellyfin 10.11.6 (apt version)
 
 ### The Problem
 
@@ -41,14 +41,12 @@ The key fix is `-hls_flags split_by_time`, which forces the HLS muxer to split s
 
 - **Hardware**: Nintendo Switch (Tegra X1)
 - **OS**: L4T Ubuntu (24.04)
-- **FFmpeg**: [FFmpeg with nvv4l2 support](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2) — FFmpeg with nvv4l2 support for Tegra
-- **Jellyfin**: 10.11.9 (apt version). Docker, Snap, and Flatpak versions are untested.
+- **FFmpeg**: [theofficialgman/FFmpeg (6.1.1-nvv4l2)](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2) — FFmpeg with nvv4l2 support for Tegra
+- **Jellyfin**: 10.11.6 (apt version). Docker, Snap, and Flatpak versions are untested.
 
-### Installing FFmpeg
+### Installing FFmpeg with nvv4l2 support
 
-If FFmpeg with nvv4l2 support is not installed, please obtain it from [theofficialgman/FFmpeg (6.1.1-nvv4l2 branch)](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2). 
-
-For L4T Ubuntu 24.04, pre-built packages (e.g., `ffmpeg 6.1.1-3ubuntu5l4t2`) may be available via apt depending on your distribution setup.
+If FFmpeg with nvv4l2 support is not installed, build and install from the [theofficialgman/FFmpeg (6.1.1-nvv4l2)](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2) repository. Follow the build instructions provided in that repository.
 
 Verify that `h264_nvv4l2` is available:
 
@@ -154,7 +152,7 @@ For stream-copy operations (no `libx264`/`libx265` in args), you should see:
 
 JellyfinのUIでは `nvv4l2` エンコーダファミリを選択できません。このラッパーはJellyfinからのFFmpeg呼び出しを透過的にインターセプトし、`libx264`/`libx265` をハードウェアエンコーダに置換し、互換性のないオプションを調整します。
 
-**動作確認環境**: Jellyfin 10.11.9 (apt版)
+**動作確認環境**: Jellyfin 10.11.6 (apt版)
 
 ### 解決する問題
 
@@ -183,14 +181,12 @@ Jellyfin → jellyfin-nvv4l2-wrapper → /usr/bin/ffmpeg
 
 - **ハードウェア**: Nintendo Switch (Tegra X1)
 - **OS**: L4T Ubuntu (24.04)
-- **FFmpeg**: [nvv4l2対応FFmpeg](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2) — Tegra向けnvv4l2対応FFmpeg
-- **Jellyfin**: 10.11.9 (apt版)。Docker版、Snap版、Flatpak版は未検証。
+- **FFmpeg**: [theofficialgman/FFmpeg (6.1.1-nvv4l2)](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2) — Tegra向けnvv4l2対応FFmpeg
+- **Jellyfin**: 10.11.6 (apt版)。Docker版、Snap版、Flatpak版は未検証。
 
-### FFmpeg のインストール
+### FFmpeg (nvv4l2対応版) のインストール
 
-nvv4l2対応FFmpegがインストールされていない場合、[theofficialgman/FFmpeg (6.1.1-nvv4l2 ブランチ)](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2) から入手してください。
-
-L4T Ubuntu 24.04環境では、OSのセットアップ状況によりビルド済みパッケージ（例: `ffmpeg 6.1.1-3ubuntu5l4t2`）がapt経由で利用可能な場合があります。
+nvv4l2対応FFmpegがインストールされていない場合、[theofficialgman/FFmpeg (6.1.1-nvv4l2)](https://github.com/theofficialgman/FFmpeg/tree/6.1.1-nvv4l2) をビルド・インストールしてください。ビルド方法はリンク先のリポジトリの指示に従ってください。
 
 `h264_nvv4l2` が利用可能か確認：
 
